@@ -1,0 +1,19 @@
+{
+  "sweep_type": "2D",
+  "param1_name": "sensitivity",
+  "param1_values": [
+    0.04,
+    0.06,
+    0.08,
+    0.1
+  ],
+  "param2_name": "mobility",
+  "param2_values": [
+    1,
+    2,
+    5,
+    10
+  ],
+  "n_runs_per_combination": 20,
+  "timestamp": "2026-02-05T14:33:23.152581"
+}

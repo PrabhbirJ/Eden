@@ -1,0 +1,10 @@
+{
+  "grid_size": 51,
+  "n_agents": 1500,
+  "share_trustworthy": 0.5,
+  "initial_trust_mean": 0.6,
+  "initial_trust_std": 0.2,
+  "sensitivity": 0.05,
+  "mobility": 5,
+  "trust_threshold": 0.5
+}

@@ -1,0 +1,22 @@
+{
+  "sweep_type": "2D",
+  "param1_name": "share_untrustworthy",
+  "param1_values": [
+    30,
+    35,
+    40,
+    45,
+    50,
+    55,
+    60
+  ],
+  "param2_name": "mobility",
+  "param2_values": [
+    1,
+    2,
+    5,
+    10
+  ],
+  "n_runs_per_combination": 20,
+  "timestamp": "2026-02-06T00:53:19.925538"
+}
