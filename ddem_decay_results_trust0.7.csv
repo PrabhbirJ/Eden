@@ -1,0 +1,4 @@
+initial_trust_mean,mobility,ddem_size,decay_rounds,share_trusting,avg_final_trust,std_final_trust,avg_ddem_occupancy,avg_refused_interactions,avg_decayed_entries
+0.7,1,5,50,0.0,0.0,0.0,0.0,32729.15,26264.85
+0.7,1,10,50,0.0,0.0,0.0,0.0,31597.7,34086.5
+0.7,1,15,50,0.0,0.0,0.0,0.0,31588.75,34112.65

@@ -32,11 +32,11 @@ def get_base_params(initial_trust_mean):
         'ddem_size': 0,
     }
 
-MOBILITIES = [1, 2, 5, 10]
-DDEM_SIZES = [0, 5, 10, 15]
+MOBILITIES = [10]
+DDEM_SIZES = [10000]
 
 # NEW: Test multiple initial trust levels
-INITIAL_TRUST_LEVELS = [0.5,0.6,0.7]
+INITIAL_TRUST_LEVELS = [0.6,0.7]
 
 N_RUNS = 20
 N_ROUNDS = 1000

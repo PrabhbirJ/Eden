@@ -45,7 +45,43 @@ fig5_left = {
     5:  [1.000, 1.000, 1.000, 0.100, 0.000, 0.000, 0.000],
     10: [1.000, 1.000, 0.950, 0.150, 0.000, 0.000, 0.000],
 }
+# -----------------------------
+# NEW FIGURE — CDEM Size × Mobility × Initial Trust
+# -----------------------------
 
+cdem_sizes = [5, 10, 15, 20]
+
+cdem_results = {
+    0.5: {   # initial trust = 0.5
+        1:  [0.050, 0.150, 0.350, 0.400],
+        2:  [0.000, 0.000, 0.050, 0.050],
+        5:  [0.000, 0.000, 0.000, 0.000],
+        10: [0.000, 0.000, 0.000, 0.000],
+    },
+    0.6: {   # initial trust = 0.6
+        1:  [1.000, 1.000, 1.000, 1.000],
+        2:  [1.000, 1.000, 1.000, 1.000],
+        5:  [1.000, 1.000, 1.000, 1.000],
+        10: [1.000, 1.000, 1.000, 1.000],
+    }
+}
+
+ddem_sizes = [5, 10, 15, 20]
+
+ddem_decay_results = {
+    0.5: {   # initial trust = 0.5
+        1:  [0.000, 0.000, 0.000, 0.000],
+        2:  [0.000, 0.000, 0.000, 0.000],
+        5:  [0.000, 0.000, 0.000, 0.000],
+        10: [0.000, 0.000, 0.000, 0.000],
+    },
+    0.6: {   # initial trust = 0.6
+        1:  [0.000, 0.000, 0.000, 0.000],
+        2:  [0.400, 0.350, 0.350, 0.350],
+        5:  [1.000, 1.000, 1.000, 1.000],
+        10: [1.000, 1.000, 1.000, 1.000],
+    }
+}
 # -----------------------------
 # PLOTTING
 # -----------------------------
@@ -89,4 +125,64 @@ fig.legend(handles, labels, loc="upper center", ncol=4)
 plt.suptitle("Trust ABM Verification — Figures 2, 4, and 5 Replication", fontsize=16)
 plt.tight_layout(rect=[0, 0, 1, 0.94])
 plt.savefig("trust_abm_verification.pdf", format="pdf", bbox_inches="tight", dpi=300)
+
+# =============================
+# FIGURE — CDEM RESULTS
+# =============================
+
+fig, axes = plt.subplots(1, 2, figsize=(14, 5), sharey=True)
+
+for ax, init_trust in zip(axes, sorted(cdem_results.keys())):
+    
+    for mobility, values in cdem_results[init_trust].items():
+        ax.plot(
+            cdem_sizes,
+            values,
+            marker='o',
+            linewidth=2,
+            label=f"M={mobility}"
+        )
+
+    ax.set_title(f"CDEM Effects (Initial Trust = {init_trust})")
+    ax.set_xlabel("CDEM Size")
+    ax.set_ylim(-0.05, 1.05)
+    ax.grid(True, linestyle="--", alpha=0.6)
+
+axes[0].set_ylabel("Share of Trusting Outcomes")
+
+handles, labels = axes[0].get_legend_handles_labels()
+fig.legend(handles, labels, loc="upper center", ncol=4)
+
+plt.suptitle("CDEM Size × Mobility × Initial Trust", fontsize=15)
+plt.tight_layout(rect=[0, 0, 1, 0.90])
+
+plt.savefig("c დემ_results.pdf", bbox_inches="tight", dpi=300)
+
+fig, axes = plt.subplots(1, 2, figsize=(14, 5), sharey=True)
+
+for ax, init_trust in zip(axes, sorted(ddem_decay_results.keys())):
+    
+    for mobility, values in ddem_decay_results[init_trust].items():
+        ax.plot(
+            ddem_sizes,
+            values,
+            marker='s',
+            linewidth=2,
+            label=f"M={mobility}"
+        )
+
+    ax.set_title(f"DDEM + Decay (Initial Trust = {init_trust})")
+    ax.set_xlabel("DDEM Size")
+    ax.set_ylim(-0.05, 1.05)
+    ax.grid(True, linestyle="--", alpha=0.6)
+
+axes[0].set_ylabel("Share of Trusting Outcomes")
+
+handles, labels = axes[0].get_legend_handles_labels()
+fig.legend(handles, labels, loc="upper center", ncol=4)
+
+plt.suptitle("DDEM Decay × Mobility × Initial Trust", fontsize=15)
+plt.tight_layout(rect=[0, 0, 1, 0.90])
+
+plt.savefig("ddem_decay_results.pdf", bbox_inches="tight", dpi=300)
 plt.show()
