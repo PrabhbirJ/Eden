@@ -1,0 +1,449 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trust Dynamics Explorer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            display: flex;
+            height: 100vh;
+        }
+        
+        /* Left Panel */
+        #controls {
+            width: 350px;
+            background: #16213e;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #0f3460;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px;
+            font-size: 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        #pauseBtn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        #resetBtn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        
+        .slider-group {
+            margin-bottom: 20px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 13px;
+            color: #aaa;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #0f3460;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+        }
+        
+        #stats {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        
+        .stat-section {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #16213e;
+        }
+        
+        .stat-section:last-child { border-bottom: none; }
+        
+        .stat-title {
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        /* Right Panel */
+        #visualization {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        canvas {
+            border-radius: 8px;
+            background: #16213e;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        
+        #gridCanvas {
+            width: 100%;
+            height: 70%;
+        }
+        
+        #chartCanvas {
+            width: 100%;
+            height: 25%;
+        }
+        
+        .legend {
+            background: #0f3460;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 11px;
+            margin-top: 10px;
+        }
+        
+        .legend-item {
+            display: inline-block;
+            margin-right: 15px;
+        }
+        
+        .legend-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <h1>🔬 Trust Dynamics Explorer</h1>
+        
+        <div class="button-group">
+            <button id="pauseBtn" onclick="togglePause()">⏸ Pause</button>
+            <button id="resetBtn" onclick="reset()">🔄 Reset</button>
+        </div>
+        
+        <div class="slider-group">
+            <div class="slider-label">
+                <span>Number of Agents</span>
+                <span id="n_agents_val">800</span>
+            </div>
+            <input type="range" id="n_agents" min="200" max="1500" step="100" value="800" 
+                   oninput="updateParam('n_agents', this.value)">
+        </div>
+        
+        <div class="slider-group">
+            <div class="slider-label">
+                <span>Mobility</span>
+                <span id="mobility_val">5</span>
+            </div>
+            <input type="range" id="mobility" min="1" max="20" step="1" value="5" 
+                   oninput="updateParam('mobility', this.value)">
+        </div>
+        
+        <div class="slider-group">
+            <div class="slider-label">
+                <span>Initial Trust</span>
+                <span id="initial_trust_mean_val">0.50</span>
+            </div>
+            <input type="range" id="initial_trust_mean" min="0" max="1" step="0.05" value="0.5" 
+                   oninput="updateParam('initial_trust_mean', this.value)">
+        </div>
+        
+        <div class="slider-group">
+            <div class="slider-label">
+                <span>Trust Threshold</span>
+                <span id="trust_threshold_val">0.50</span>
+            </div>
+            <input type="range" id="trust_threshold" min="0" max="1" step="0.05" value="0.5" 
+                   oninput="updateParam('trust_threshold', this.value)">
+        </div>
+        
+        <div class="slider-group">
+            <div class="slider-label">
+                <span>Share Trustworthy</span>
+                <span id="share_trustworthy_val">0.60</span>
+            </div>
+            <input type="range" id="share_trustworthy" min="0" max="1" step="0.05" value="0.6" 
+                   oninput="updateParam('share_trustworthy', this.value)">
+        </div>
+        
+        <div class="slider-group">
+            <div class="slider-label">
+                <span>Learning Sensitivity</span>
+                <span id="sensitivity_val">0.05</span>
+            </div>
+            <input type="range" id="sensitivity" min="0.01" max="0.2" step="0.01" value="0.05" 
+                   oninput="updateParam('sensitivity', this.value)">
+        </div>
+        
+        <div id="stats">
+            <div class="stat-section">
+                <div class="stat-title">ROUND <span id="stat_round">0</span></div>
+            </div>
+            <div class="stat-section">
+                <div class="stat-title">TRUST STATISTICS</div>
+                <div>Avg Trust: <span id="stat_avg_trust">0.000</span></div>
+                <div>Std Dev: <span id="stat_std_trust">0.000</span></div>
+                <div>% Trusting: <span id="stat_pct_trusting">0.0</span>%</div>
+            </div>
+            <div class="stat-section">
+                <div class="stat-title">INTERACTIONS</div>
+                <div>Total Trusted: <span id="stat_n_trusted">0</span></div>
+                <div>Cooperated: <span id="stat_n_cooperated">0</span></div>
+                <div>Coop Rate: <span id="stat_coop_rate">0.000</span></div>
+            </div>
+            <div class="stat-section">
+                <div class="stat-title">POPULATION</div>
+                <div>Agents: <span id="stat_n_agents">0</span></div>
+                <div>Trustworthy: <span id="stat_n_trustworthy">0</span></div>
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <span class="legend-dot" style="background: #f44336;"></span> Low Trust
+            </div>
+            <div class="legend-item">
+                <span class="legend-dot" style="background: #ffeb3b;"></span> Med Trust
+            </div>
+            <div class="legend-item">
+                <span class="legend-dot" style="background: #4caf50;"></span> High Trust
+            </div>
+            <br>
+            <div class="legend-item">━━ Green = Cooperation</div>
+            <div class="legend-item">╌╌ Red = Betrayal</div>
+        </div>
+    </div>
+    
+    <div id="visualization">
+        <canvas id="gridCanvas"></canvas>
+        <canvas id="chartCanvas"></canvas>
+    </div>
+    
+    <script>
+        const gridCanvas = document.getElementById('gridCanvas');
+        const gridCtx = gridCanvas.getContext('2d');
+        const chartCanvas = document.getElementById('chartCanvas');
+        const chartCtx = chartCanvas.getContext('2d');
+        
+        let running = true;
+        
+        // Set canvas sizes
+        function resizeCanvases() {
+            gridCanvas.width = gridCanvas.offsetWidth;
+            gridCanvas.height = gridCanvas.offsetHeight;
+            chartCanvas.width = chartCanvas.offsetWidth;
+            chartCanvas.height = chartCanvas.offsetHeight;
+        }
+        resizeCanvases();
+        window.addEventListener('resize', resizeCanvases);
+        
+        // Initialize
+        fetch('/api/init', { method: 'POST' });
+        
+        function togglePause() {
+            fetch('/api/toggle', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    running = data.running;
+                    document.getElementById('pauseBtn').textContent = running ? '⏸ Pause' : '▶ Play';
+                });
+        }
+        
+        function reset() {
+            fetch('/api/reset', { method: 'POST' });
+        }
+        
+        function updateParam(name, value) {
+            document.getElementById(name + '_val').textContent = 
+                parseFloat(value) % 1 === 0 ? value : parseFloat(value).toFixed(2);
+            
+            fetch('/api/params', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ [name]: parseFloat(value) })
+            });
+        }
+        
+        function getTrustColor(trust) {
+            if (trust < 0.33) return `rgb(244, 67, 54)`;  // Red
+            if (trust < 0.66) return `rgb(255, 235, 59)`;  // Yellow
+            return `rgb(76, 175, 80)`;  // Green
+        }
+        
+        function drawGrid(agents, interactions) {
+            const w = gridCanvas.width;
+            const h = gridCanvas.height;
+            const gridSize = 51;
+            const cellSize = Math.min(w, h) / gridSize;
+            
+            gridCtx.fillStyle = '#16213e';
+            gridCtx.fillRect(0, 0, w, h);
+            
+            // Draw interaction lines
+            gridCtx.globalAlpha = 0.6;
+            interactions.forEach(inter => {
+                const x1 = inter.trustor_pos[0] * cellSize + cellSize/2;
+                const y1 = inter.trustor_pos[1] * cellSize + cellSize/2;
+                const x2 = inter.trustee_pos[0] * cellSize + cellSize/2;
+                const y2 = inter.trustee_pos[1] * cellSize + cellSize/2;
+                
+                gridCtx.strokeStyle = inter.cooperated ? '#4caf50' : '#f44336';
+                gridCtx.lineWidth = inter.cooperated ? 2 : 1;
+                gridCtx.setLineDash(inter.cooperated ? [] : [5, 5]);
+                gridCtx.beginPath();
+                gridCtx.moveTo(x1, y1);
+                gridCtx.lineTo(x2, y2);
+                gridCtx.stroke();
+            });
+            gridCtx.setLineDash([]);
+            gridCtx.globalAlpha = 1.0;
+            
+            // Draw agents
+            agents.forEach(agent => {
+                const x = agent.x * cellSize + cellSize/2;
+                const y = agent.y * cellSize + cellSize/2;
+                const radius = agent.trustworthy ? 4 : 3;
+                
+                gridCtx.fillStyle = getTrustColor(agent.trust);
+                gridCtx.beginPath();
+                gridCtx.arc(x, y, radius, 0, Math.PI * 2);
+                gridCtx.fill();
+                gridCtx.strokeStyle = '#000';
+                gridCtx.lineWidth = 0.5;
+                gridCtx.stroke();
+            });
+        }
+        
+        function drawChart(trustHistory, coopHistory) {
+            const w = chartCanvas.width;
+            const h = chartCanvas.height;
+            const padding = 40;
+            
+            chartCtx.fillStyle = '#16213e';
+            chartCtx.fillRect(0, 0, w, h);
+            
+            if (trustHistory.length < 2) return;
+            
+            const plotW = w - 2 * padding;
+            const plotH = h - 2 * padding;
+            
+            // Draw axes
+            chartCtx.strokeStyle = '#666';
+            chartCtx.lineWidth = 1;
+            chartCtx.beginPath();
+            chartCtx.moveTo(padding, padding);
+            chartCtx.lineTo(padding, h - padding);
+            chartCtx.lineTo(w - padding, h - padding);
+            chartCtx.stroke();
+            
+            // Draw trust history
+            chartCtx.strokeStyle = '#2196f3';
+            chartCtx.lineWidth = 2;
+            chartCtx.beginPath();
+            trustHistory.forEach((trust, i) => {
+                const x = padding + (i / (trustHistory.length - 1)) * plotW;
+                const y = h - padding - trust * plotH;
+                if (i === 0) chartCtx.moveTo(x, y);
+                else chartCtx.lineTo(x, y);
+            });
+            chartCtx.stroke();
+            
+            // Draw coop history
+            chartCtx.strokeStyle = '#4caf50';
+            chartCtx.beginPath();
+            coopHistory.forEach((coop, i) => {
+                const x = padding + (i / (coopHistory.length - 1)) * plotW;
+                const y = h - padding - coop * plotH;
+                if (i === 0) chartCtx.moveTo(x, y);
+                else chartCtx.lineTo(x, y);
+            });
+            chartCtx.stroke();
+            
+            // Labels
+            chartCtx.fillStyle = '#aaa';
+            chartCtx.font = '12px sans-serif';
+            chartCtx.fillText('Trust', 10, 20);
+            chartCtx.fillText('Coop', 10, 35);
+        }
+        
+        function updateStats(stats) {
+            document.getElementById('stat_round').textContent = stats.round;
+            document.getElementById('stat_avg_trust').textContent = stats.avg_trust.toFixed(3);
+            document.getElementById('stat_std_trust').textContent = stats.std_trust.toFixed(3);
+            document.getElementById('stat_pct_trusting').textContent = stats.pct_trusting.toFixed(1);
+            document.getElementById('stat_n_trusted').textContent = stats.n_trusted;
+            document.getElementById('stat_n_cooperated').textContent = stats.n_cooperated;
+            document.getElementById('stat_coop_rate').textContent = stats.coop_rate.toFixed(3);
+            document.getElementById('stat_n_agents').textContent = stats.n_agents;
+            document.getElementById('stat_n_trustworthy').textContent = stats.n_trustworthy;
+        }
+        
+        function update() {
+            if (running) {
+                fetch('/api/step', { method: 'POST' });
+            }
+            
+            fetch('/api/state')
+                .then(r => r.json())
+                .then(data => {
+                    drawGrid(data.agents, data.interactions);
+                    drawChart(data.trust_history, data.coop_history);
+                    updateStats(data.stats);
+                });
+            
+            setTimeout(update, 50);  // 20 FPS
+        }
+        
+        update();
+    </script>
+</body>
+</html>
